@@ -1,7 +1,7 @@
 # _*_coding:utf-8_*_
 
 import pandas as pd
-from plot import mean_plot,variance_plot,chi2_plot
+from plot import mean_plot,variance_plot,chi2_plot,mutual_info_plot
 import argparse
 import ConfigParser
 
@@ -29,8 +29,9 @@ def draw(data):
     data[predictors]=data[predictors].fillna(0)
     num_feat_each_plot = 50
     #mean_plot(data,predictors,num_feat_each_plot)
-    variance_plot(data,predictors,num_feat_each_plot)
+    #variance_plot(data,predictors,num_feat_each_plot)
     #chi2_plot(data,predictors,num_feat_each_plot)
+    mutual_info_plot(data,predictors,num_feat_each_plot)
 
 if __name__ == '__main__':
     parser = arg_parser()
@@ -39,7 +40,6 @@ if __name__ == '__main__':
     test_data = pd.read_csv(test_path)
     data = pd.concat([train_data,test_data],axis=0)
     data.drop('id',axis=1,inplace = True)
-
     draw(data)
    
 

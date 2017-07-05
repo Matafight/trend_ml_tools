@@ -2,7 +2,42 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import chi2
+from sklearn.feature_selection import mutual_info_classif
 
+def mutual_info_plot(data,predictors,num_fea_each_plot):
+    plot2data = data[predictors]
+    mut_info = mutual_info_classif(data[predictors],data['label'])
+    dimension = len(predictors)
+    X = range(1, dimension + 1)
+
+
+    df = pd.DataFrame({'predictors':predictors,'mut_info':mut_info})
+    df.fillna(0)
+    df.sort_values('mut_info',axis=0,ascending = False,inplace=True)
+    save_index = df['predictors']
+    thefile = open('../average_rank/ranks/index_mut_info.txt', 'w')
+    for item in save_index:
+        thefile.write("%s\n" % item)
+        
+    todiv = dimension/num_fea_each_plot
+    for i in range(todiv+1):
+        
+        if(i==todiv):
+            y_label = df.iloc[i*num_fea_each_plot:dimension]['mut_info'].values
+            x_label = df.iloc[i*num_fea_each_plot:dimension]['predictors'].values
+        else:
+            y_label = df.iloc[i*num_fea_each_plot:(i+1)*num_fea_each_plot]['mut_info'].values
+            x_label = df.iloc[i*num_fea_each_plot:(i+1)*num_fea_each_plot]['predictors'].values    
+        fig,ax=plt.subplots()
+        X = range(1,len(x_label)+1)
+        ax.bar(X, y_label, facecolor='#ff9999', edgecolor='white')
+        ax.set_title('Comparison of selected features by their mutual information')
+        ax.set_xlabel('Feature Index')
+        ax.set_ylabel('mutual info Value')
+
+        plt.xticks(X, x_label, rotation=90)
+        plt.suptitle('Feature Selection results')
+        plt.show()
 
 def mean_plot(data,predictors,num_fea_each_plot):
     plot2data = data[predictors]

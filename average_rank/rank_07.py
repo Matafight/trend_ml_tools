@@ -27,6 +27,14 @@ with  open(tar_dir+'/index_chi2.txt') as chi2_fh:
         chi2_rank[line] = rank
         rank += 1
 
+mut_info_rank= {}
+with  open(tar_dir+'/index_mutinfo.txt') as mut_info_fh:
+    lines = mut_info_fh.readlines()
+    rank = 1
+    for line in lines:
+        mut_info_rank[line] = rank
+        rank += 1
+
 variance_rank_v2 = {}
 for item in mean_rank:
     if item in variance_rank:
@@ -42,6 +50,7 @@ for item in mean_rank:
         chi2_rank_v2[item] = None
 
 
+
 '''total_rank = {}
 for item in mean_rank:
     cur_rank = 0
@@ -54,7 +63,7 @@ sorted(total_rank.iteritems(), key=lambda d:d[1], reverse = False)'''
 
 
 xg_rank = {}
-with  open(tar_dir+'/weight_xg_rank.txt') as xg_fh:
+with  open(tar_dir+'/index_weight.txt') as xg_fh:
     lines =xg_fh.readlines()
     rank = 1
     for line in lines:
@@ -69,7 +78,7 @@ for item in mean_rank:
         xg_rank_v2[item] = None
 
 xg_rank_gain = {}
-with  open(tar_dir+'/gain_xg_rank.txt') as xg_fh:
+with  open(tar_dir+'/index_gain.txt') as xg_fh:
     lines =xg_fh.readlines()
     rank = 1
     for line in lines:
@@ -84,7 +93,7 @@ for item in mean_rank:
         xg_rank_v3[item] = None
 
 xg_rank_cover = {}
-with  open(tar_dir+'/cover_xg_rank.txt') as xg_fh:
+with  open(tar_dir+'/index_cover.txt') as xg_fh:
     lines =xg_fh.readlines()
     rank = 1
     for line in lines:
@@ -104,6 +113,8 @@ variance_rank_v2_key = []
 variance_rank_v2_value=[]
 chi2_rank_v2_key=[]
 chi2_rank_v2_value=[]
+mut_info_rank_key = []
+mut_info_rank_value=[]
 xg_rank_v2_key = []
 xg_rank_v2_value = []
 xg_rank_v3_key = []
@@ -116,11 +127,15 @@ for item in mean_rank:
 
 for item in variance_rank_v2:
     variance_rank_v2_key.append(item)
-    variance_rank_v2_value.append(mean_rank[item])
+    variance_rank_v2_value.append(variance_rank_v2[item])
 
 for item in chi2_rank_v2:
     chi2_rank_v2_key.append(item)
     chi2_rank_v2_value.append(chi2_rank_v2[item])
+
+for item in mut_info_rank:
+    mut_info_rank_key.append(item)
+    mut_info_rank_value.append(mut_info_rank[item])
 
 for item in xg_rank_v2:
     xg_rank_v2_key.append(item)
@@ -143,6 +158,8 @@ variance_df = pd.DataFrame({'features':variance_rank_v2_key,'variance':variance_
 chi2_df = pd.DataFrame({'features':chi2_rank_v2_key,'chi2':chi2_rank_v2_value})
 #chi2_df.to_csv('chi2_df.csv',index = False)
 
+mut_info_df = pd.DataFrame({'features':mut_info_rank_key,'mut_info':mut_info_rank_value})
+
 xg_df = pd.DataFrame({'features':xg_rank_v2_key,'xg_model_weight':xg_rank_v2_value})
 #xg_df.to_csv('xg_df.csv',index=  False)
 
@@ -160,6 +177,10 @@ for i,row in variance_df.iterrows():
 all_df['chi2'] = 0
 for i,row in chi2_df.iterrows():
     all_df.loc[all_df['features']==row['features'],'chi2'] = int(row['chi2'])
+
+all_df['mut_info'] = 0
+for i,row in mut_info_df.iterrows():
+    all_df.loc[all_df['features']==row['features'],'mut_info'] = int(row['mut_info'])
 all_df['xg_model_weight'] = 0
 for i,row in xg_df.iterrows():
     all_df.loc[all_df['features']==row['features'],'xg_model_weight'] = row['xg_model_weight']
@@ -174,4 +195,4 @@ sum_row = all_df.sum(axis=1)
 all_df['aver_rank'] = all_df.mean(axis=1).values
 print(all_df.columns)
 all_df.sort_values(by = ['aver_rank'],axis=0,inplace=True)
-all_df.to_csv('./ranks/comb_rank.csv',index= False)
+all_df.to_csv('./ranks/comb_rank_v2.csv',index= False)

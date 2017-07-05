@@ -137,7 +137,7 @@ if __name__ == '__main__':
     dtrain = xgb.DMatrix(train_data,label=train_labels)
     xg_model = xgb_train(dtrain,param)
     predictors = predictors.values
-    feat_plot(xg_model,train_data,train_labels,eval_type = 'cover',max_num_features = 50,x_axis_label=predictors) 
+    feat_plot(xg_model,train_data,train_labels,eval_type = 'gain',max_num_features = 50,x_axis_label=predictors) 
     
     '''pred= xg_model.predict(xg_test)
     test_labels = xg_test.get_label()

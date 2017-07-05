@@ -31,7 +31,7 @@ def fea_plot(xg_model, feature, label, type = 'weight', max_num_features = None,
     fea_index = get_fea_index(fscore, max_num_features)
 
     #save ranks to files
-    save_rank_file = open('../average_rank/ranks/'+type + '_xg_rank.txt','w')
+    save_rank_file = open('../average_rank/ranks/index_'+type + '.txt','w')
     all_feat_index = get_fea_index(fscore,None)
     all_feat_index = [i+1 for i in all_feat_index]
     print('fscore len')
