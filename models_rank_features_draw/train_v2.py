@@ -38,11 +38,14 @@ def conf_parser(conf_path):
     save_period = int(cf.get('xg_conf', 'save_period'))
     eval = int(cf.get('xg_conf', 'eval'))
     nthread = int(cf.get('xg_conf', 'nthread'))
+
     param = {'booster': booster, 'objective': objective, 'silent': silent, 'eta': eta, 'gamma': gamma,
              'min_child_weight': min_child_weight,
              'max_depth': max_depth, 'num_round': num_round, 'save_period': save_period, 'eval': eval,
              'nthread': nthread}
     data_path = cf.get('xg_conf', 'train_path')
+    ranks_dir = cf.get('xg_conf','ranks_dir')
+ 
 
 
 
@@ -53,7 +56,7 @@ def conf_parser(conf_path):
     #        data += '.xgmat'
     #    except:
     #        print('convert fail!')
-    return data_path, param
+    return data_path, param,ranks_dir
 
 def read_label(path):
     with open(path, 'r',encoding = 'utf-8',errors = 'ignore') as label_fi:
@@ -122,8 +125,8 @@ def read_data(path):
     return predictors,df_data[predictors].values,df_data[tar].values
 
 
-def feat_plot(xg_model,data,label,x_axis_label=None,eval_type='weight',max_num_features=None):
-    xg_plot.fea_plot(xg_model,data,label,type = eval_type,max_num_features = max_num_features,x_axis_label = x_axis_label)
+def feat_plot(xg_model,data,label,x_axis_label=None,eval_type='weight',max_num_features=None,ranks_dir='./'):
+    xg_plot.fea_plot(xg_model,data,label,type = eval_type,max_num_features = max_num_features,x_axis_label = x_axis_label,ranks_dir = ranks_dir)
     plt.show()
 
 def confusion_mat(xg_model):
@@ -132,12 +135,12 @@ def confusion_mat(xg_model):
 if __name__ == '__main__':
 
     arg = arg_parser()
-    train_path, param = conf_parser(arg.conf)
+    train_path, param,ranks_dir = conf_parser(arg.conf)
     predictors,train_data,train_labels = read_data(train_path)
     dtrain = xgb.DMatrix(train_data,label=train_labels)
     xg_model = xgb_train(dtrain,param)
     predictors = predictors.values
-    feat_plot(xg_model,train_data,train_labels,eval_type = 'gain',max_num_features = 50,x_axis_label=predictors) 
+    feat_plot(xg_model,train_data,train_labels,eval_type = 'cover',max_num_features = 50,x_axis_label=predictors,ranks_dir = ranks_dir) 
     
     '''pred= xg_model.predict(xg_test)
     test_labels = xg_test.get_label()

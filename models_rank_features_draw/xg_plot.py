@@ -5,6 +5,7 @@ from sklearn.manifold import TSNE
 from sklearn.feature_selection import chi2
 from matplotlib import pyplot as plt
 from operator import itemgetter
+import os
 
 def get_fea_index(fscore, max_num_features):
     fea_index = list()
@@ -24,14 +25,19 @@ def get_axis_label(fea_index,x_axis_labels):
     x_labels = [x_axis_labels[i] for i in fea_index]
     return x_labels
 
-def fea_plot(xg_model, feature, label, type = 'weight', max_num_features = None, x_axis_label = None):
+def fea_plot(xg_model, feature, label, type = 'weight', max_num_features = None, x_axis_label = None,ranks_dir = './'):
     fig, AX = plt.subplots(nrows=1, ncols=2)
     fscore = xg_model.get_score(importance_type=type)
     fscore = sorted(fscore.items(), key=itemgetter(1), reverse=True) # sort scores
     fea_index = get_fea_index(fscore, max_num_features)
 
     #save ranks to files
-    save_rank_file = open('../average_rank/ranks/index_'+type + '.txt','w')
+    path_to_save = '../average_rank/ranks/'+ranks_dir
+    if not os.path.isdir(path_to_save):
+        os.mkdir(path_to_save)
+    path_to_save =path_to_save + '/index_'+type+'.txt'
+
+    save_rank_file = open(path_to_save,'w')
     all_feat_index = get_fea_index(fscore,None)
     all_feat_index = [i+1 for i in all_feat_index]
     print('fscore len')

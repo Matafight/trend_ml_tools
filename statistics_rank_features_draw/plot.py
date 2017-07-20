@@ -3,8 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
-
-def mutual_info_plot(data,predictors,num_fea_each_plot):
+import os
+def mutual_info_plot(data,predictors,num_fea_each_plot,ranks_dir):
     plot2data = data[predictors]
     mut_info = mutual_info_classif(data[predictors],data['label'])
     dimension = len(predictors)
@@ -15,7 +15,11 @@ def mutual_info_plot(data,predictors,num_fea_each_plot):
     df.fillna(0)
     df.sort_values('mut_info',axis=0,ascending = False,inplace=True)
     save_index = df['predictors']
-    thefile = open('../average_rank/ranks/index_mut_info.txt', 'w')
+    path_to_save = '../average_rank/ranks/'+ranks_dir
+    if not os.path.isdir(path_to_save):
+        os.mkdir(path_to_save)
+    path_to_save = path_to_save+'/index_mutinfo.txt'
+    thefile = open(path_to_save, 'w')
     for item in save_index:
         thefile.write("%s\n" % item)
         
@@ -39,7 +43,7 @@ def mutual_info_plot(data,predictors,num_fea_each_plot):
         plt.suptitle('Feature Selection results')
         plt.show()
 
-def mean_plot(data,predictors,num_fea_each_plot):
+def mean_plot(data,predictors,num_fea_each_plot,ranks_dir):
     plot2data = data[predictors]
     plotmean = plot2data.mean()
     dimension = len(predictors)
@@ -61,7 +65,11 @@ def mean_plot(data,predictors,num_fea_each_plot):
     
     #save indexes
     save_index = diff.index
-    thefile = open('../average_rank/ranks/index_mean.txt', 'w')
+    path_to_save = '../average_rank/ranks/'+ranks_dir
+    if not os.path.isdir(path_to_save):
+        os.mkdir(path_to_save)
+    path_to_save = path_to_save+'/index_mean.txt'
+    thefile = open(path_to_save, 'w')
     for item in save_index:
         thefile.write("%s\n" % item)
     todiv = dimension/num_fea_each_plot
@@ -94,9 +102,12 @@ def mean_plot(data,predictors,num_fea_each_plot):
         ax.set_ylim(-1.1, 1.1)
         plt.xticks(X, x_label, rotation=90)
         ax.set_title('Feature Selection results')
-        plt.show()
+        fig = plt.gcf()
+        fig.set_size_inches(18.5, 10.5)
+        plt.tight_layout()
+        plt.savefig('./test.jpg',dpi=400)
  
-def variance_plot(data,predictors,num_fea_each_plot):
+def variance_plot(data,predictors,num_fea_each_plot,ranks_dir):
     plot2data = data[predictors]
     plotmean = plot2data.mean()
     dimension = len(predictors)
@@ -112,7 +123,11 @@ def variance_plot(data,predictors,num_fea_each_plot):
     diff.sort_values(axis=0,ascending=False,inplace = True)
         #save indexes
     save_index = diff.index
-    thefile = open('../average_rank/ranks/index_variance.txt', 'w')
+    path_to_save = '../average_rank/ranks/'+ranks_dir
+    if not os.path.isdir(path_to_save):
+        os.mkdir(path_to_save)
+    path_to_save = path_to_save+'/index_variance.txt'
+    thefile = open(path_to_save, 'w')
     for item in save_index:
         thefile.write("%s\n" % item)
     todiv = dimension/num_fea_each_plot
@@ -141,13 +156,13 @@ def variance_plot(data,predictors,num_fea_each_plot):
         ax.legend((p1, p2), ('Malware', 'Normal'))
         ax.set_title('Comparison of selected features by their means')
         ax.set_xlabel('Feature Index')
-        ax.set_ylabel('Mean Value')
+        ax.set_ylabel('Variance Value')
         ax.set_ylim(-1.1, 1.1)
         plt.xticks(X, x_label, rotation=90)
         ax.set_title('Feature Selection results')
         plt.show()
     
-def chi2_plot(data,predictors,num_fea_each_plot):
+def chi2_plot(data,predictors,num_fea_each_plot,ranks_dir):
     dimension = len(predictors)
     X = range(1, dimension + 1)
     t = chi2(data[predictors], data['label'])[0]
@@ -158,7 +173,11 @@ def chi2_plot(data,predictors,num_fea_each_plot):
     df.sort_values('chi2',axis=0,ascending = False,inplace=True)
     #t = df['chi2'].values
     save_index = df['predictors']
-    thefile = open('../average_rank/ranks/index_chi2.txt', 'w')
+    path_to_save = '../average_rank/ranks/'+ranks_dir
+    if not os.path.isdir(path_to_save):
+        os.mkdir(path_to_save)
+    path_to_save = path_to_save+'/index_chi2.txt'
+    thefile = open(path_to_save, 'w')
     for item in save_index:
         thefile.write("%s\n" % item)
         

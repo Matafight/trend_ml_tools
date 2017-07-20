@@ -16,10 +16,11 @@ def get_params(conf_path):
     cf.read(conf_path)
     train_path = cf.get('train_test_path','train_path') 
     test_path = cf.get('train_test_path','test_path')
-    return train_path,test_path
+    ranks_dir = cf.get('train_test_path','ranks_dir')
+    return train_path,test_path,ranks_dir
     
 
-def draw(data):
+def draw(data,ranks_dir):
     #normalization first
     predictors = data.dtypes.index[data.dtypes.index!='label']
     tar = 'label'
@@ -28,18 +29,18 @@ def draw(data):
     data[predictors] = data[predictors].fillna(data[predictors].mean())
     data[predictors]=data[predictors].fillna(0)
     num_feat_each_plot = 50
-    #mean_plot(data,predictors,num_feat_each_plot)
-    #variance_plot(data,predictors,num_feat_each_plot)
-    #chi2_plot(data,predictors,num_feat_each_plot)
-    mutual_info_plot(data,predictors,num_feat_each_plot)
+    mean_plot(data,predictors,num_feat_each_plot,ranks_dir)
+    #variance_plot(data,predictors,num_feat_each_plot,ranks_dir)
+    #chi2_plot(data,predictors,num_feat_each_plot,ranks_dir)
+    #mutual_info_plot(data,predictors,num_feat_each_plot,ranks_dir)
 
 if __name__ == '__main__':
     parser = arg_parser()
-    train_path,test_path = get_params(parser.conf)
+    train_path,test_path,ranks_dir = get_params(parser.conf)
     train_data = pd.read_csv(train_path)
     test_data = pd.read_csv(test_path)
     data = pd.concat([train_data,test_data],axis=0)
     data.drop('id',axis=1,inplace = True)
-    draw(data)
+    draw(data,ranks_dir)
    
 

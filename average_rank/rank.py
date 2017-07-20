@@ -87,7 +87,7 @@ def comb_ranks(rank_dict,path):
     total_df['aver_rank'] = total_df.mean(axis=1).values
     print(total_df.columns)
     total_df.sort_values(by = ['aver_rank'],axis=0,inplace=True)
-    total_df.to_csv('./ranks/comb_rank.csv',index= False)
+    total_df.to_csv('./ranks/'+path+'/comb_rank.csv',index= False)
 
 
             
@@ -95,7 +95,7 @@ def comb_ranks(rank_dict,path):
     
 
 if __name__ == '__main__':
-    path = '2017-07'
+    path = 'version2_features_201707'
     rank_dict = read_ranks(path)
     rank_dict = handle_missing(rank_dict)
     comb_ranks(rank_dict,path)
