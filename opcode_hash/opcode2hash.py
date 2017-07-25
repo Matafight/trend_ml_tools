@@ -20,15 +20,27 @@ def arg_parser():
 def conf_parser(conf_path):
     cf = ConfigParser.ConfigParser()
     cf.read(conf_path)
-    input_dir = cf.get('source', 'source_dirs')
-    label = int(cf.get('source','label'))
-    output_dir = cf.get('dest', 'dest_dirs')
-    algorithm = cf.get('algorithm','algorithm')
-    bits = int(cf.get('algorithm','bits'))
-    task = cf.get('source','task')
-    class_type = cf.get('source','class_type')
+    top_dir = cf.get('top_dir','top_dir')
+    input_dirs = cf.get('opcode2hash_source', 'source_dirs')
+    input_dirs = [os.path.join(top_dir,i) for i in input_dirs.split(';')]
+
+    labels = cf.get('opcode2hash_source','labels')
+    labels = [int(i) for i in labels.split(';')]
+
+    output_dir = cf.get('opcode2hash_dest', 'dest_dirs')
+    output_dir = os.path.join(top_dir,output_dir)
+
+    algorithm = cf.get('opcode2hash_algorithm','algorithm')
+
+    bits = int(cf.get('opcode2hash_algorithm','bits'))
+
+    tasks = cf.get('opcode2hash_source','tasks')
+    tasks = tasks.split(';')
+
+    class_types = cf.get('opcode2hash_source','class_types')
+    class_types = class_types.split(';')
     
-    param = {'input_dir':input_dir,'label':label,'output_dir':output_dir,'algorithm':algorithm,'bits':bits,'task':task,'class_type':class_type}
+    param = {'input_dirs':input_dirs,'labels':labels,'output_dir':output_dir,'algorithm':algorithm,'bits':bits,'tasks':tasks,'class_types':class_types}
     return param
 
 # sample code 
@@ -75,12 +87,12 @@ class batch_str2bits():
     algorithm = 'MD5'
     def __init__(self,param):
         self.algorithm = param['algorithm']
-        self.input_dir = param['input_dir']
+        self.input_dirs = param['input_dirs']
         self.output_dir = param['output_dir']
         self.bits = param['bits']
-        self.label = param['label']
-        self.task = param['task']
-        self.class_type = param['class_type']
+        self.labels = param['labels']
+        self.tasks = param['tasks']
+        self.class_types = param['class_types']
 
     def hexstr2bitstr(self,string):
         hex_list = [format(int(c,16),'b') for c in string ]
@@ -100,8 +112,10 @@ class batch_str2bits():
         return globals()[self.algorithm](self.bits).get_hash(str)
 
     
-    def dirlist(self,path,allfile=[]):
+    def dirlist(self,path,allfile=[],first_vis=False):
         filelist = os.listdir(path)
+        if True==first_vis:
+            allfile=[]
         for filename in filelist:
             filepath = os.path.join(path, filename)
             if os.path.isdir(filepath):
@@ -110,8 +124,8 @@ class batch_str2bits():
                 allfile.append(filepath)
         return allfile
 
-    def batch_converting(self):
-        allfile = self.dirlist(self.input_dir)
+    def batch_converting(self,input_dir):
+        allfile = self.dirlist(input_dir,first_vis=True)
         print('hashing binary file to bits...')
         hash_list = []
         for item in tqdm(allfile):
@@ -126,25 +140,34 @@ class batch_str2bits():
         return allfile,bits_list
 
 
-    def saving2files(self):
-        allfile,bits_list = self.batch_converting()
+    def saving2files(self,input_dir,task,class_type,label):
+        allfile,bits_list = self.batch_converting(input_dir)
         bits_arr = np.array(bits_list)
         num_row,num_column = np.shape(bits_arr)
-        labels = self.label*np.ones(num_row).reshape(num_row,1)
+        labels = label*np.ones(num_row).reshape(num_row,1)
         bits_arr = np.concatenate([bits_arr,labels],axis=1)
         columns = ['bit_'+str(i) for i in range(1,num_column+1)]
         columns.append('label')
-        #index = allfile
         df_bits = pd.DataFrame(bits_arr,columns=columns)
-        #df_bits['opcode_name'] = allfile
         df_bits.insert(0,'opcode_name',allfile)
-        n_path = os.path.join(self.output_dir,self.task)
+
+        new_dir = self.algorithm+'_'+str(self.bits)
+        n_path = os.path.join(self.output_dir,new_dir)
         if not os.path.isdir(n_path):
             os.mkdir(n_path)
-        n_path = os.path.join(n_path,self.class_type)
+        n_path = os.path.join(n_path,task)
         if not os.path.isdir(n_path):
             os.mkdir(n_path)
-        df_bits.to_csv(os.path.join(n_path,'opcode.csv'),index=False)
+        n_path = os.path.join(n_path,class_type)
+        if not os.path.isdir(n_path):
+            os.mkdir(n_path)
+        df_bits.to_csv(os.path.join(n_path,self.algorithm+'_'+str(self.bits)+'_opcode.csv'),index=False)
+    
+    def batch_saving2files(self):
+        for i,input_dir in enumerate(self.input_dirs):
+            print(input_dir)
+            self.saving2files(input_dir,self.tasks[i],self.class_types[i],self.labels[i])
+
         
     
 if __name__=='__main__':
@@ -152,7 +175,8 @@ if __name__=='__main__':
     param = conf_parser(parser.conf)
 
     batch_map = batch_str2bits(param)
-    batch_map.saving2files()
+    batch_map.batch_saving2files()
+
     #pattern = re.compile(r'([\w]+\.opcode)$')
     #str = '../datas/newdownload/combined/201707/malicious/test/1\004f1efc5ddc00fa51c9a7baa3dbd528e4834da5f26a4ee5299d98a4074c5ee9.opcode'
     #ret = pattern.search(str)

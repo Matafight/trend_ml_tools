@@ -1,2 +1,9 @@
 datas/
 ranks/
+.vscode/
+.ipynb_checkpoints/
+log/
+test/
+train/
+test_NN_format/
+train_NN_format/
