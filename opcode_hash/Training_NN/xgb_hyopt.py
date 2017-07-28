@@ -1,11 +1,12 @@
 #coding:utf-8
+import sys
 import xgboost as xgb
 import numpy as np
 import pandas as pd
 import argparse
 import ConfigParser
 from method_config import param_xgb_space
-from tools import get_csr_labels,save2xgdata
+from tools import save2xgdata
 from sklearn.datasets import load_svmlight_file
 from hyperopt import fmin,hp,tpe,STATUS_OK,Trials,space_eval
 import log_class
@@ -24,6 +25,7 @@ def arg_parser():
 
 
 
+
 # configure parser
 def conf_parser(conf_path,pipeline):
     cf = ConfigParser.ConfigParser()
@@ -33,10 +35,11 @@ def conf_parser(conf_path,pipeline):
         print('not in pipiline')
         data = cf.get('xgb_hyopt_xg_conf', 'data')
     else:
-        print('within pipeline')
-        algorithm = cf.get('opcode2hash_algorithm','algorithm') +'_'+cf.get('opcode2hash_algorithm','bits')
+        algorithm = cf.get('setup_opcode2hash','algorithm') +'_'+cf.get('setup_opcode2hash','bits')
         alg_bits_path = os.path.join(top_dir,algorithm)
-        data = os.path.join(alg_bits_path,r'train_NN_format/NN_features.txt')
+        data = os.path.join(alg_bits_path,r'all_train_opcode_NN/NN_features.txt')
+        others['log_dir']= algorithm
+
 
     
     n_fold = int(cf.get('xgb_hyopt_xg_conf','n_fold'))
@@ -49,14 +52,15 @@ def conf_parser(conf_path,pipeline):
             save2xgdata(data, label)
             data += '.libsvm'
         else:
-            label = os.path.join(alg_bits_path,r'train_NN_format/NNAI.txt')
+            label = os.path.join(alg_bits_path,r'all_train_opcode_NN/NN_AI.txt')
             save2xgdata(data,label)
             data += '.libsvm'
     else:
         if False == pipeline:
             data = cf.get('xgb_hyopt_xg_conf', 'xgdata')
         else:
-            data = os.path.join(alg_bits_path,r'train_NN_format/NN_features.txt.libsvm')
+            data = os.path.join(alg_bits_path,r'all_train_opcode_NN/NN_features.txt.libsvm')
+
         
     pred_test = int(cf.get('xgb_hyopt_xg_conf','pred_test'))
     param_untuned = {'n_fold':n_fold,'data':data,'save_model':save_model,'metrics':metrics,'if_ascend':if_ascend,'pred_test':pred_test}
@@ -69,24 +73,25 @@ def conf_parser(conf_path,pipeline):
         if False == pipeline:
             test_data = cf.get('xgb_hyopt_test','data')
         else:
-            test_data = os.path.join(alg_bits_path,r'test_NN_format/NN_features.txt')
+            test_data = os.path.join(alg_bits_path,r'all_test_opcode_NN/NN_features.txt')
         if int(cf.get('xgb_hyopt_test','xgmat'))==0: # if it is not a xgmat file, than convert it
             if False == pipeline:
                 label = cf.get('xgb_hyopt_test', 'label')
                 save2xgdata(test_data, label)
                 test_data += '.libsvm'
             else:
-                label = os.path.join(alg_bits_path,r'test_NN_format/NNAI.txt')
+                label = os.path.join(alg_bits_path,r'all_test_opcode_NN/NN_AI.txt')
                 save2xgdata(test_data,label)
                 test_data += '.libsvm'
         else:
             if False == pipeline:
                 test_data = cf.get('xgb_hyopt_test', 'xgdata')
             else:
-                test_data = os.path.join(alg_bits_path,r'test_NN_format/NN_features.txt.libsvm')
+                test_data = os.path.join(alg_bits_path,r'all_test_opcode_NN/NN_features.txt.libsvm')
         param_untuned['test_data'] = test_data
     return param_untuned
 
+    
 def custom_eval_metirc_precison(preds,dtrain):
     labels = dtrain.get_label()
     flag1 = np.prod(preds<=1.0)
@@ -253,6 +258,8 @@ if __name__=='__main__':
     #load data and convert data
     parser = arg_parser()
     param_untuned = conf_parser(parser.conf,parser.pipeline)
+    print("reading data from")
+    print(param_untuned['data'])
     X,y = load_svmlight_file(param_untuned['data'])
     X = X.todense()
 
@@ -260,7 +267,6 @@ if __name__=='__main__':
     #load test data
         test_X,test_y = load_svmlight_file(param_untuned['test_data'])
         test_X = test_X.todense()
-        print('pred_test true')
     else:
         test_X = X
         test_y = y

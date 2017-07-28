@@ -145,31 +145,31 @@ def redis_files(train_opcode,test_opcode,df_train,df_test):
     train2test=[]
     missing_training=[]
     missing_testing=[]
-    #for item in tqdm(df_train_files):
-    #    item +='.opcode'
-    #    if item in train_files:
-    #        pass
-    #    elif item in test_files:
-    #        #需要知道这个样本正例还是负例
-    #        #如果是正例
-    #        if df_train.loc[df_train['id']==item[:-7],'malware'].values[0] == 1:
-    #            #剪切到train_opcode[0]目录下
-    #            #原路径是test_opcode[0]
-    #            source_path = os.path.join(test_opcode[0],item)
-    #            dest_path = os.path.join(train_opcode[0],item)
-    #            move(source_path,dest_path)
-    #        else:
-    #            #剪切到train_opcode[1]下
-    #            #原路径是test_opcode[1]
-    #            source_path = os.path.join(test_opcode[1],item)
-    #            dest_path = os.path.join(train_opcode[1],item)
-    #            move(source_path,dest_path)
-    #        test2train.append(item)
-    #    else:
-    #        missing_training.append(item)
-    #print('test to train:%f'%len(test2train))
+    for item in tqdm(df_train_files):
+        item +='.opcode'
+        if item in train_files:
+            pass
+        elif item in test_files:
+            #需要知道这个样本正例还是负例
+            #如果是正例
+            if df_train.loc[df_train['id']==item[:-7],'malware'].values[0] == 1:
+                #剪切到train_opcode[0]目录下
+                #原路径是test_opcode[0]
+                source_path = os.path.join(test_opcode[0],item)
+                dest_path = os.path.join(train_opcode[0],item)
+                move(source_path,dest_path)
+            else:
+                #剪切到train_opcode[1]下
+                #原路径是test_opcode[1]
+                source_path = os.path.join(test_opcode[1],item)
+                dest_path = os.path.join(train_opcode[1],item)
+                move(source_path,dest_path)
+            test2train.append(item)
+        else:
+            missing_training.append(item)
+    print('test to train:%f'%len(test2train))
 
-    for item in tqdm(df_test_files[40000:]):
+    for item in tqdm(df_test_files):
         item += '.opcode'
         if item in test_files:
             pass
@@ -286,17 +286,17 @@ def correct_labels(train_opcode,test_opcode,df_train,df_test):
     print('missing testing %f'%len(missing_testing))
 
 if __name__=='__main__':
-    train_path = '../datas/opcode-201707/train_0707.csv'
-    test_path = '../datas/opcode-201707/test_0707.csv'
+    train_path = '../datas/Partition/train-test-set-0727/train.csv'
+    test_path = '../datas/Partition/train-test-set-0727/test.csv'
     df_train,df_test = train_test_df(train_path,test_path)
     print('finish reading dataframe files...')
 
-    os.system(r'net use p: \\10.64.24.50\Shaocheng_Guo')
-    os.chdir('p:')
-    test_pos_path = './opcode-201707/combined/201707/malicious/test/1'
-    test_neg_path = './opcode-201707/combined/201707/normal/test/0'
-    train_pos_path = './opcode-201707/combined/201707/malicious/train/1'
-    train_neg_path = './opcode-201707/combined/201707/normal/train/0'
+    #os.system(r'net use p: \\10.64.24.50\Shaocheng_Guo')
+    #os.chdir('p:')
+    test_pos_path = '../datas/newdownload/combined/201707/malicious/test/1'
+    test_neg_path = '../datas/newdownload/combined/201707/normal/test/0'
+    train_pos_path = '../datas/newdownload/combined/201707/malicious/train/1'
+    train_neg_path = '../datas/newdownload/combined/201707/normal/train/0'
    
 
     #test_pos_path = '../datas/newdownload/combined/201707/malicious/test/1'
@@ -306,8 +306,8 @@ if __name__=='__main__':
 
     train_opcode = [train_pos_path,train_neg_path]
     test_opcode = [test_pos_path,test_neg_path]
-    #redis_files(train_opcode,test_opcode,df_train,df_test)    
-    correct_labels(train_opcode,test_opcode,df_train,df_test)
+    redis_files(train_opcode,test_opcode,df_train,df_test)    
+    #correct_labels(train_opcode,test_opcode,df_train,df_test)
 
 
 

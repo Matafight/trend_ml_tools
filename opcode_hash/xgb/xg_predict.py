@@ -9,8 +9,8 @@ from sklearn.metrics import confusion_matrix
 from tools import read_sample_path
 def get_config():
     config = dict()
-    config['model_path'] = './Models/2017_07_25_14_06_14.xgmodel'
-    config['data_path'] = '../test_NN_format/NN_features.txt.libsvm'
+    config['model_path'] = './Models/2017_07_26_17_06_00.xgmodel'
+    config['data_path'] = '../../datas/combined-0707/201707/map_md5_48/test_NN_format/NN_features.txt.libsvm'
     return config
 
 if __name__ == '__main__':
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     print('test_data shape:')
     print(X.shape)
     dtest = xgb.DMatrix(X,label = y)
-    model = xgb.Booster(model_file='./Models/2017_07_25_14_06_14.xgmodel')
+    model = xgb.Booster(model_file=config['model_path'])
     pred = model.predict(dtest)
     test_y = y
     pred = model.predict(dtest)

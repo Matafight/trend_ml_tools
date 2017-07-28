@@ -7,3 +7,6 @@ test/
 train/
 test_NN_format/
 train_NN_format/
+Models/
+models/
+map_md5_48/

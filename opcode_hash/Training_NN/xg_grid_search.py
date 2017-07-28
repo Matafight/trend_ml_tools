@@ -1,7 +1,5 @@
 #coding=utf-8
-"""
-基于xgboost的cv函数进行调参
-"""
+import sys
 import xgboost as xgb
 from sklearn.model_selection import train_test_split,GridSearchCV
 from sklearn.metrics import precision_score,recall_score
@@ -19,50 +17,48 @@ from sklearn.metrics import recall_score,precision_score,accuracy_score
 import copy
 from sklearn.metrics import confusion_matrix
 
+
 # parser
 def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c','--conf', required=True)
-    parser.add_argument('-o', '--output', required=True)
+    parser.add_argument('-pipe',action = 'store_true',dest = 'pipeline',default = False)
     return parser.parse_args()
 
 # configure parser
-def conf_parser(conf_path):
+def conf_parser(conf_path,pipeline):
     cf = ConfigParser.ConfigParser()
     cf.read(conf_path)
-
-    booster = cf.get('xg_conf', 'booster')
-    silent = int(cf.get('xg_conf','silent'))
-    nthread = int(cf.get('xg_conf', 'nthread'))
-
-    eta = float(cf.get('xg_conf', 'eta'))
-    gamma = float(cf.get('xg_conf', 'gamma'))
-    max_delta_step = float(cf.get('xg_conf','max_delta_step'))
-    p_lambda = float(cf.get('xg_conf', 'lambda'))
-    alpha = float(cf.get('xg_conf', 'alpha'))
-    sketch_eps = float(cf.get('xg_conf', 'sketch_eps'))
-    refresh_leaf = int(cf.get('xg_conf', 'refresh_leaf'))
-    max_depth = int(cf.get('xg_conf', 'max_depth'))
-    subsample = float(cf.get('xg_conf', 'subsample'))
-    min_child_weight = float(cf.get('xg_conf', 'min_child_weight'))
-    colsample_bytree = float(cf.get('xg_conf', 'colsample_bytree'))
-
-    objective = cf.get('xg_conf', 'objective')
-    base_score = float(cf.get('xg_conf', 'base_score'))
-    eval_metric = cf.get('xg_conf', 'eval_metric')
-    ascend = int(cf.get('xg_conf','ascend'))
-    seed = int(cf.get('xg_conf', 'seed'))
+    booster = cf.get('xg_grid_search', 'booster')
+    silent = int(cf.get('xg_grid_search','silent'))
+    nthread = int(cf.get('xg_grid_search', 'nthread'))
+    eta = float(cf.get('xg_grid_search', 'eta'))
+    gamma = float(cf.get('xg_grid_search', 'gamma'))
+    max_delta_step = float(cf.get('xg_grid_search','max_delta_step'))
+    p_lambda = float(cf.get('xg_grid_search', 'lambda'))
+    alpha = float(cf.get('xg_grid_search', 'alpha'))
+    sketch_eps = float(cf.get('xg_grid_search', 'sketch_eps'))
+    refresh_leaf = int(cf.get('xg_grid_search', 'refresh_leaf'))
+    max_depth = int(cf.get('xg_grid_search', 'max_depth'))
+    subsample = float(cf.get('xg_grid_search', 'subsample'))
+    min_child_weight = float(cf.get('xg_grid_search', 'min_child_weight'))
+    colsample_bytree = float(cf.get('xg_grid_search', 'colsample_bytree'))
+    objective = cf.get('xg_grid_search', 'objective')
+    base_score = float(cf.get('xg_grid_search', 'base_score'))
+    eval_metric = cf.get('xg_grid_search', 'eval_metric')
+    ascend = int(cf.get('xg_grid_search','ascend'))
+    seed = int(cf.get('xg_grid_search', 'seed'))
 
 
-    save_period = int(cf.get('xg_conf', 'save_period'))
-    eval = int(cf.get('xg_conf', 'eval'))
-    cv = int(cf.get('xg_conf','cv'))
+    save_period = int(cf.get('xg_grid_search', 'save_period'))
+    eval = int(cf.get('xg_grid_search', 'eval'))
+    cv = int(cf.get('xg_grid_search','cv'))
 
-    t_num_round = int(cf.get('xg_tune','num_round'))
-    t_max_depth = [int(i) for i in cf.get('xg_tune','max_depth').split(',')]
-    t_subsample = [float(i) for i in cf.get('xg_tune','subsample').split(',')]
-    t_min_child_weight = [float(i) for i in cf.get('xg_tune','min_child_weight').split(',')]
-    t_colsample_bytree = [float(i) for i in cf.get('xg_tune','colsample_bytree').split(',')]
+    t_num_round = int(cf.get('xg_grid_search_tune','num_round'))
+    t_max_depth = [int(i) for i in cf.get('xg_grid_search_tune','max_depth').split(',')]
+    t_subsample = [float(i) for i in cf.get('xg_grid_search_tune','subsample').split(',')]
+    t_min_child_weight = [float(i) for i in cf.get('xg_grid_search_tune','min_child_weight').split(',')]
+    t_colsample_bytree = [float(i) for i in cf.get('xg_grid_search_tune','colsample_bytree').split(',')]
 
     t_param = {'num_round':t_num_round,'max_depth':t_max_depth,'subsample':t_subsample,
                'min_child_weight':t_min_child_weight,'colsample_bytree':t_colsample_bytree}
@@ -75,19 +71,56 @@ def conf_parser(conf_path):
              'seed':seed,'nthread': nthread}
 
     others = {'num_round':t_num_round,'cv':cv,'ascend':ascend,'eval_metric':eval_metric}
-    data = cf.get('xg_conf', 'data')
 
-    if int(cf.get('xg_conf','xgmat'))==0: # if it is not a xgmat file, than convert it
-        try:
-            label = cf.get('xg_conf', 'label')
+
+    top_dir = cf.get('dest_opcode2hash','dest_dirs')
+    if False==pipeline:
+        print('not in pipiline')
+        data = cf.get('xg_grid_search', 'data')
+    else:
+        print('within pipeline')
+        algorithm = cf.get('setup_opcode2hash','algorithm') +'_'+cf.get('setup_opcode2hash','bits')
+        alg_bits_path = os.path.join(top_dir,algorithm)
+        data = os.path.join(alg_bits_path,r'all_train_opcode_NN/NN_features.txt')
+        others['log_dir']= algorithm
+
+        
+
+    if int(cf.get('xgb_hyopt_xg_conf','xgmat'))==0: # if it is not a xgmat file, than convert it
+        if False == pipeline:
+            label = cf.get('xgb_hyopt_xg_conf', 'label')
             save2xgdata(data, label)
             data += '.libsvm'
-        except:
-            pass
+        else:
+            label = os.path.join(alg_bits_path,r'all_train_opcode_NN/NN_AI.txt')
+            save2xgdata(data,label)
+            data += '.libsvm'
     else:
-        data = cf.get('xg_conf', 'xgdata')
-    data_test = cf.get('xg_conf','xgdata_test')
-    return data,data_test, params,t_param,others
+        if False == pipeline:
+            data = cf.get('xgb_hyopt_xg_conf', 'xgdata')
+        else:
+            data = os.path.join(alg_bits_path,r'all_train_opcode_NN/NN_features.txt.libsvm')
+    pred_test = int(cf.get('xgb_hyopt_xg_conf','pred_test'))    
+    if pred_test:
+        if False == pipeline:
+            test_data = cf.get('xgb_hyopt_test','data')
+        else:
+            test_data = os.path.join(alg_bits_path,r'all_test_opcode_NN/NN_features.txt')
+        if int(cf.get('xgb_hyopt_test','xgmat'))==0: # if it is not a xgmat file, than convert it
+            if False == pipeline:
+                label = cf.get('xgb_hyopt_test', 'label')
+                save2xgdata(test_data, label)
+                test_data += '.libsvm'
+            else:
+                label = os.path.join(alg_bits_path,r'all_test_opcode_NN/NN_AI.txt')
+                save2xgdata(test_data,label)
+                test_data += '.libsvm'
+        else:
+            if False == pipeline:
+                test_data = cf.get('xgb_hyopt_test', 'xgdata')
+            else:
+                test_data = os.path.join(alg_bits_path,r'all_test_opcode_NN/NN_features.txt.libsvm')
+    return data,test_data, params,t_param,others
 
 def get_negative_positive_ratio(y):
     labels_np = np.array(y)
@@ -95,7 +128,7 @@ def get_negative_positive_ratio(y):
     pos_num = np.sum(labels_np==1)
     return neg_num/pos_num
 
-def tune_num_boost_round(params,dtrain,num_boost_round,watchlist,eval_metric,feval=None,ascend=True):
+def tune_num_boost_round(params,dtrain,num_boost_round,log,watchlist,eval_metric,feval=None,ascend=True):
 
     evals_result = {}
     if(feval==None):
@@ -107,6 +140,7 @@ def tune_num_boost_round(params,dtrain,num_boost_round,watchlist,eval_metric,fev
     else:
         loc = min(enumerate(evals_result), key=lambda x: x[1])[0]
     loc += 1
+    log.add("****num_boost_round : "+str(loc)+":"+str(evals_result[loc]))
     print('****  num_boost_round : %s : %s'%(loc,evals_result[loc-1]))
     return loc
 
@@ -141,8 +175,7 @@ def set_custom_eval_metirc(eval_metirc):
             return v
     return None
 
-def predict_test(model,test_X,test_y):
-    log = log_class.log_class('xgb','grid_search')
+def predict_test(model,test_X,test_y,log):
     dtest = xgb.DMatrix(test_X,label = test_y)
     pred = model.predict(dtest)
     #split by 0.5
@@ -160,40 +193,36 @@ def predict_test(model,test_X,test_y):
     print('test precision:'+str(precision))
     print('test accuracy:'+str(accuracy))
     c= confusion_matrix(test_y,pred)
-    cm = copy.deepcopy(c)
-    cm[0,0] = int(c[1,1])
-    cm[0,1] = int(c[1,0])
-    cm[1,0] = int(c[0,1])
-    cm[1,1] = int(c[0,0])
-    print(cm)
-    log.add('confusion matrix:')
-    log.add(str(cm[0,0])+' '+str(cm[0,1]))
-    log.add(str(cm[1,0])+' '+str(cm[1,1]))
-if __name__ == '__main__':
-    arg = arg_parser()
-    xgdata,data_test,params,params_t,params_other = conf_parser(arg.conf)
+    if c.shape[0] >=2:
+        cm = copy.deepcopy(c)
+        cm[0,0] = int(c[1,1])
+        cm[0,1] = int(c[1,0])
+        cm[1,0] = int(c[0,1])
+        cm[1,1] = int(c[0,0])
+        print(cm)
+        log.add('confusion matrix:')
+        log.add(str(cm[0,0])+' '+str(cm[0,1]))
+        log.add(str(cm[1,0])+' '+str(cm[1,1]))
 
-    #x, y = get_csr_labels(xgdata)
+def xg_train_wrapper(parser):
+    xgdata,data_test,params,params_t,params_other = conf_parser(parser.conf,parser.pipeline)
     x,y = load_svmlight_file(xgdata)
     x = x.todense()
-
     test_x,test_y = load_svmlight_file(data_test)
     test_x = test_x.todense()
-
 
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, random_state=42)
     dtrain = xgb.DMatrix(x_train, label=y_train)
     dval = xgb.DMatrix(x_val, y_val)
     dtrain_whole = xgb.DMatrix(x,label = y)
-    #dtrain_whole = xgb.DMatrix(xgdata)
     watchlist = [(dtrain, 'train'), (dval, 'eval')]
     watchlist_whole = [(dtrain_whole, 'eval')]
 
     scale_pos_weight = get_negative_positive_ratio(y)
     params['scale_pos_weight'] = scale_pos_weight
     custom_feval = set_custom_eval_metirc(params_other['eval_metric'])
-    # tune the parameter num_round
-    num_round = tune_num_boost_round(params,dtrain,params_other['num_round'],watchlist,eval_metric=params_other['eval_metric'],feval=custom_feval,ascend=params_other['ascend'])
+    log = log_class.log_class('grid_search_xgb',params_other['log_dir'])
+    num_round = tune_num_boost_round(params,dtrain,params_other['num_round'],log,watchlist,eval_metric=params_other['eval_metric'],feval=custom_feval,ascend=params_other['ascend'])
 
     params_t = [dict(max_depth=params_t['max_depth']),
                 dict(subsample=params_t['subsample']),
@@ -204,7 +233,7 @@ if __name__ == '__main__':
         values = param_t[k]
         if(k=='num_round'):
             continue
-        # pprint.pprint(params)
+        log.add("====="+str(k)+"======="+str(values))
         print('========== ',k,' ========== ',values)
         result = []
         if(len(values) == 1):
@@ -212,6 +241,7 @@ if __name__ == '__main__':
             continue
         for v in values:
             print('**** for : %s ****\n'%(str(v)))
+            log.add("**** for :"+str(v)+"****")
             params[k] = v
             if (custom_feval == None):
                 params['eval_metric'] = params_other['eval_metric']
@@ -225,7 +255,6 @@ if __name__ == '__main__':
                                show_stdv=False,
                                shuffle=True)
             result_df = result_df[['test-'+params_other['eval_metric']+'-mean']]
-            # print(result_df)
             assert result_df.columns[0]=='test-'+params_other['eval_metric']+'-mean','choose the correct column\n'
             result_np = result_df.as_matrix()
             result.append(float(result_np[-1][0]))
@@ -236,10 +265,21 @@ if __name__ == '__main__':
             loc = min(enumerate(result),key=lambda x:x[1])[0]
         params[k] = values[loc]
         print('%s : %s\n'%(k,params[k]))
-    num_round = tune_num_boost_round(params,dtrain_whole,params_other['num_round'],watchlist_whole,eval_metric=params_other['eval_metric'],feval=custom_feval,ascend=params_other['ascend'])
+        log.add(k)
+        log.add(str(params[k]))
+    num_round = tune_num_boost_round(params,dtrain_whole,params_other['num_round'],log,watchlist_whole,eval_metric=params_other['eval_metric'],feval=custom_feval,ascend=params_other['ascend'])
     model = xgb.train(params,dtrain_whole,num_round,watchlist_whole,feval=custom_feval)
     pprint.pprint(params)
     time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-    model.save_model(arg.output + '/' + time_str + '.xgmodel')
-    print('saved : %s' % (arg.output + '/' + time_str + '.xgmodel'))
-    predict_test(model,test_x,test_y)
+    if not os.path.isdir('./models'):
+        os.mkdir('./models')
+    if not os.path.isdir('./models/grid_search'):
+        os.mkdir('./models/grid_search')
+    model.save_model('./models/grid_search' + '/' + time_str + '.xgmodel')
+    print('saved : %s' % ('./models/grid_search' + '/' + time_str + '.xgmodel'))
+    predict_test(model,test_x,test_y,log)
+
+if __name__ == '__main__':
+    arg = arg_parser()
+    xg_train_wrapper(arg)
+    

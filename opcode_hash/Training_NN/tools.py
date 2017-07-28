@@ -164,7 +164,6 @@ def dirlist2(path, allfile):
             allfile[filename] = filepath
     return allfile
 
-
 def to_NN(data,label,path,NN_name='NN_train.txt',NN_label_name='NNAI_train.txt'):
     """
     将传入的 data label  path等等数据，存储为NN数据格式 
@@ -194,26 +193,6 @@ def to_NN(data,label,path,NN_name='NN_train.txt',NN_label_name='NNAI_train.txt')
                     line_AI += '\n'
                 NN.write(line)
                 NN_label.write(line_AI)
-
-
-'''
-input:
-data: np.arrray(N,)
-label: np.float32
-path: str
-
-output:
-features: str
-AI: str
-'''
-def return_NN_format(data,label,path):
-    case = data
-    indice = np.nonzero(data)[0]
-    features = '1;1;'+str(len(indice))+';'
-    for index in indice:
-        features += str(index+1)+';'+str(case[index])+';'
-    line_AI= str(label) + '|' + path
-    return features,line_AI
 
 #store in the following format
 #dim

@@ -1,0 +1,1 @@
+python opcode2hash_tool-multiprocessing.py -c opcode2hash_tool.config
