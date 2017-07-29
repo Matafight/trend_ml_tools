@@ -1,7 +1,7 @@
 #coding:utf-8
 
 from opcode2NN_single import arg_parser,conf_parser,get_NN_format
-from tool import dirlist2
+from tools import dirlist2
 
 def batch2NN(param):
     all_files = dirlist2(param['source_dirs'])
@@ -15,6 +15,18 @@ def batch2NN(param):
             feature_list.append(feature)
             AI_list.append(NN_AI)
     #write to files
+    with open(param['dest_features_path']) as fh:
+        fh.write(str(dim)+'\n')
+        for item in feature_list[0:-1]:
+            fh.write(item+'\n')
+        fh.write(feature_list[-1])
+    with open(param['dest_labels_path']) as fh:
+        for item in AI_list[0:-1]:
+            fh.write(item+'\n')
+        fh.write(AI_list[-1])
+
+    
+
             
 
 
@@ -22,3 +34,4 @@ def batch2NN(param):
 if __name__=='__main__':
     parser = arg_parser()
     param = conf_parser(parser.conf)
+    batch2NN(param)
