@@ -1,16 +1,17 @@
 ## 该文件夹下包含两个小脚本
 1. opcode2NN_batch.py 将一个目录下的所有opcode文件(通过递归查找)通过哈希算法转换成01编码，并保存为NNAI格式。
-    每一个opcode文件转换成的向量为一个样本，由于当前并不知道样本的类标号，将其类标号置为0(0 表示标号未知，1表示正例样本，2表示负例样本)，将样本和类标号分别存储在hashvec.dat和hashvec.dat.AI文件中(可自定义文件名)，hashvec.dat和hashvec.dat.AI的文件格式如下：
+    每一个opcode文件转换成的向量为一个样本，由于当前并不知道样本的类标号，将其类标号置为0(0 表示标号未知，1表示正例样本，2表示负例样本)，将样本和类标号分别存储在hashvec.dat和hashvec.dat_AI文件中(可自定义文件名)，hashvec.dat和hashvec.dat.AI的文件格式如下：
     - hashvec.dat
         第一行为样本特征维度
-        从第二行开始，每行为一个样本且每行的格式为: num1;num2;非零特征个数;第一个非零特征索引（索引从1开始）;第一个非零特征值;第二个非零特征索引;第二个非零特征值;...
-        其中num1和num2为任意值均可
+        从第二行开始，每行为一个样本且每行的格式为: num1;num2;非零特征个数;第一个非零特征索引（索引从1开始）;第一个非零特征值;第二个非零特征索引;第二个非零特征值;...,注意这里的num1和num2可以是任意数值。
     - hashvec.dat.AI
         该文件存储hashvec.dat中每行样本对应的类标号和opcode文件路径
         标号|文件路径
     
 
 2. NN_split.py 读取给定的train.csv和test.csv(或其他表示训练集测试集划分的文件)，对第一步保存的hashvec.dat和hashvec.dat.AI进行划分，并根据train.csv和test.csv中提供的类标号重新对样本标号。
+    - train.csv和test.csv格式：至少包含两列数据，分别是opcode文件名(id)和类标号(malware)，列名分别是id和malware。
+
 
 
 ## 两个脚本各自对应这一个配置文件：
@@ -25,10 +26,10 @@
     需要设置的参数为：
     - train: 被划分为训练集的opcode编号及相应类标号的csv文件路径，具体到文件名
     - test: 被划分为测试集的opcode及其类标号的csv文件路径，具体到文件名
-    - source_features_path: 样本全集的特征
-    - source_labels_path: 样本全集的类标号和对应的opcode文件路径
-    - split_train_test: 是否将全集中的训练集和测试集分开
-    - split_malware_normal:是否将全集中malware和normal样本分开
+    - source_features_path: 样本全集的特征路径(hashvec.dat路径)
+    - source_labels_path: 样本全集的类标号路径(hashvec.dat.AI路径)
+    - split_train_test: 是否将全集中的训练集和测试集分开，1表示分开
+    - split_malware_normal:是否将全集中malware和normal样本分开，1表示分开
     - dest_dir: 划分后的数据的存放目录，不用具体到文件名
 
 

@@ -136,13 +136,13 @@ def redistribute_samples(dim,df_train,df_test,opcode2index,features_lines,labels
     #train_pos,train_neg,test_pos,test_neg
     if param['split_train_test'] == 1 and param['split_malware_normal'] == 1:
         train_pos_features_path  = os.path.join(param['dest_dir'],'train_malware_vec.dat')
-        train_pos_labels_path = os.path.join(param['dest_dir'],'train_malware_vec.dat.AI')
+        train_pos_labels_path = os.path.join(param['dest_dir'],'train_malware_vec.dat_AI')
         train_neg_features_path = os.path.join(param['dest_dir'],'train_normal_vec.dat')
-        train_neg_labels_path = os.path.join(param['dest_dir'],'train_normal_vec.dat.AI')
+        train_neg_labels_path = os.path.join(param['dest_dir'],'train_normal_vec.dat_AI')
         test_pos_features_path = os.path.join(param['dest_dir'],'test_malware_vec.dat')
-        test_pos_labels_path = os.path.join(param['dest_dir'],'test_malware_vec.dat.AI')
+        test_pos_labels_path = os.path.join(param['dest_dir'],'test_malware_vec.dat_AI')
         test_neg_features_path = os.path.join(param['dest_dir'],'test_normal_vec.dat')
-        test_neg_labels_path = os.path.join(param['dest_dir'],'test_normal_vec.dat.AI')
+        test_neg_labels_path = os.path.join(param['dest_dir'],'test_normal_vec.dat_AI')
 
         write_files(train_pos_features_path,train_pos_lines,dim)
         write_files(train_pos_labels_path,train_pos_labels)
@@ -155,9 +155,9 @@ def redistribute_samples(dim,df_train,df_test,opcode2index,features_lines,labels
     elif param['split_train_test'] == 1:
         #train test 划分
         train_features_path = os.path.join(param['dest_dir'],'train_vec.dat')
-        train_labels_path = os.path.join(param['dest_dir'],'train_vec.dat.AI')
+        train_labels_path = os.path.join(param['dest_dir'],'train_vec.dat_AI')
         test_features_path = os.path.join(param['dest_dir'],'test_vec.dat')
-        test_labels_path = os.path.join(param['dest_dir'],'test_vec.dat.AI')
+        test_labels_path = os.path.join(param['dest_dir'],'test_vec.dat_AI')
 
         train_features = train_pos_lines + train_neg_lines
         train_labels = train_pos_labels + train_neg_labels
@@ -170,9 +170,9 @@ def redistribute_samples(dim,df_train,df_test,opcode2index,features_lines,labels
         write_files(test_labels_path,test_labels)
     elif param['split_malware_normal'] == 1:
         malware_features_path = os.path.join(param['dest_dir'],'malware_vec.dat')
-        malware_labels_path = os.path.join(param['dest_dir'],'malware_vec.dat.AI')
+        malware_labels_path = os.path.join(param['dest_dir'],'malware_vec.dat_AI')
         normal_features_path = os.path.join(param['dest_dir'],'normal_vec.dat')
-        normal_labels_path = os.path.join(param['dest_dir'],'normal_vec.dat.AI')
+        normal_labels_path = os.path.join(param['dest_dir'],'normal_vec.dat_AI')
 
         malware_features = train_pos_lines + test_pos_lines
         malware_labels = train_pos_labels + test_pos_labels
