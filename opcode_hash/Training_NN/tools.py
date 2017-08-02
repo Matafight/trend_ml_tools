@@ -1,6 +1,6 @@
 #_*_ coding:utf-8_*_
 import scipy.sparse
-from sklearn.model_selection import GridSearchCV
+#from sklearn.model_selection import GridSearchCV
 import pandas as pd
 import os
 import numpy as np
@@ -95,13 +95,14 @@ def read_label(path):
     with open(path, 'r') as label_fi:
         label_data = []
         for line in label_fi.readlines():
-            if int(float(line.split('|')[0])) == 0:
+            if int(float(line.split('|')[0])) == 2:
                 label = 0
             if int(float(line.split('|')[0])) == 1:
                 label = 1
             try:
                 label_data.append(label)
             except:
+                print('label not existing...')
                 print(line)
                 print(int(line.split('|')[0]))
 
@@ -139,6 +140,8 @@ def save2xgdata(fe_path, la_path):
     print('Finished reading feature')
 
 
+
+
 def dirlist(path, allfile):
 
     filelist = os.listdir(path)
@@ -163,6 +166,7 @@ def dirlist2(path, allfile):
         else:
             allfile[filename] = filepath
     return allfile
+
 
 def to_NN(data,label,path,NN_name='NN_train.txt',NN_label_name='NNAI_train.txt'):
     """
@@ -193,6 +197,26 @@ def to_NN(data,label,path,NN_name='NN_train.txt',NN_label_name='NNAI_train.txt')
                     line_AI += '\n'
                 NN.write(line)
                 NN_label.write(line_AI)
+
+
+'''
+input:
+data: np.arrray(N,)
+label: np.float32
+path: str
+
+output:
+features: str
+AI: str
+'''
+def return_NN_format(data,label,path):
+    case = data
+    indice = np.nonzero(data)[0]
+    features = '1;1;'+str(len(indice))+';'
+    for index in indice:
+        features += str(index+1)+';'+str(case[index])+';'
+    line_AI= str(label) + '|' + path
+    return features,line_AI
 
 #store in the following format
 #dim
