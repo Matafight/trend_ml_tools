@@ -246,6 +246,8 @@ def xg_train_wrapper(parser):
     params['scale_pos_weight'] = scale_pos_weight
     custom_feval = set_custom_eval_metirc(params_other['eval_metric'])
     log = log_class.log_class('grid_search_xgb',params_other['log_dir'])
+    log.add('scale_pos_weight:'+str(scale_pos_weight))
+    log.add('eval_metric:'+params_other['eval_metric'])
     print(params)
     num_round = tune_num_boost_round(params,dtrain,params_other['num_round'],log,watchlist,eval_metric=params_other['eval_metric'],feval=custom_feval,ascend=params_other['ascend'])
 
@@ -302,10 +304,11 @@ def xg_train_wrapper(parser):
     time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     if not os.path.isdir('./models'):
         os.mkdir('./models')
-    if not os.path.isdir('./models/grid_search'):
-        os.mkdir('./models/grid_search')
-    model.save_model('./models/grid_search' + '/' + time_str + '.xgmodel')
-    print('saved : %s' % ('./models/grid_search' + '/' + time_str + '.xgmodel'))
+    dataname_model_path = os.path.join('./models',params_other['log_dir'])
+    if not os.path.isdir(dataname_model_path):
+        os.mkdir(dataname_model_path)
+    model.save_model(dataname_model_path + '/' + time_str + '.xgmodel')
+    print('saved : %s' % (dataname_model_path + '/' + time_str + '.xgmodel'))
     predict_test(model,test_x,test_y,log)
 
 if __name__ == '__main__':
