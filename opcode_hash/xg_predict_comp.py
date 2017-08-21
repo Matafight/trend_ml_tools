@@ -5,8 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import pprint
-
-from tools import get_predictedResults_from_file,read_sample_path
+import time
+import os
+from tools.tools import get_predictedResults_from_file,read_sample_path
 
 
 global num_thres
@@ -149,14 +150,7 @@ def calcu_measures(labels,preds_prob,model_name,thres):
     # measures['pr_auc'] = average_precision_score(labels, preds_prob)
 
     return measures
-"""
-def combine_measures(measures0,measures1):
-    measures = dict()
-    for k,v in measures0.iteritems():
-        v1 = measures1[k]
-        measures[k] = (v,v1)
-    return measures
-"""
+
 def combine_measuresList(measures_list):
     measures = dict()
     num_measures_list = len(measures_list)
@@ -166,34 +160,26 @@ def combine_measuresList(measures_list):
             measures[k].append(measures_list[i][k])
     return measures
 
-"""
-def compare_roc_auc(measures):
-    plt.figure(1)
-    plt.title('ROC Curve')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.axis([0,1,0,1])
-    # plt.plot(measures['fpr'][0],measures['tpr'][0],'r-',measures['fpr'][0],measures['tpr'][0],'ro',label='%s roc_auc : %f'%(measures['model_name'][0], measures['roc_auc'][0]))
-    plt.plot(measures['fpr'][0],measures['tpr'][0],'r-',label='%s roc_auc : %f'%(measures['model_name'][0], measures['roc_auc'][0]))
-    # plt.plot(measures['fpr'][1], measures['tpr'][1], 'g-', measures['fpr'][1], measures['tpr'][1], 'go',label='%s roc_auc : %f' % (measures['model_name'][1], measures['roc_auc'][1]))
-    plt.plot(measures['fpr'][1], measures['tpr'][1], 'g-',label='%s roc_auc : %f' % (measures['model_name'][1], measures['roc_auc'][1]))
-    plt.legend(loc='lower right', shadow=True, fontsize='x-large')
-    plt.show()
-"""
-def compare_roc_auc(measures,fid=1,axis_interval=[0,1,0,1],marker_list=['g-','r-','b-']):
+
+def compare_roc_auc(measures,fid=1,axis_interval=[0,1,0,1],marker_list=['g-','r-','b-'],save_path = None):
     plt.figure(fid)
     plt.title('ROC Curve')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.axis(axis_interval)
     for i in range(len(measures['fprs'])):
-        # plt.plot(measures['fpr'][0],measures['tpr'][0],'r-',measures['fpr'][0],measures['tpr'][0],'ro',label='%s roc_auc : %f'%(measures['model_name'][0], measures['roc_auc'][0]))
-        # plt.plot(measures['fprs'][i],measures['tprs'][i],marker_list[i],label='%s roc_auc : %f'%(measures['model_name'][i], measures['roc_auc'][i]))
+   
         plt.plot(measures['fprs'][i],measures['tprs'][i],marker_list[i],label='%s roc_auc '%(measures['model_name'][i]))
-        # plt.plot(measures['fpr'][1], measures['tpr'][1], 'g-', measures['fpr'][1], measures['tpr'][1], 'go',label='%s roc_auc : %f' % (measures['model_name'][1], measures['roc_auc'][1]))
+  
     plt.legend(loc='lower right', shadow=True)
+    if save_path!=None:
+        time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        if not os.path.isdir(save_path):
+            os.mkdir(save_path)
+        plt.savefig(os.path.join(save_path,'roc_'+time_str+'_.png'))
     plt.show()
-def compare_pr_auc(measures,fid=1,axis_interval=[0,1,0,1],marker_list=['g-','r-','b-']):
+    
+def compare_pr_auc(measures,fid=1,axis_interval=[0,1,0,1],marker_list=['g-','r-','b-'],save_path = None):
     plt.figure(fid)
     plt.title('P-R Curve')
     plt.xlabel('Recall')
@@ -201,13 +187,12 @@ def compare_pr_auc(measures,fid=1,axis_interval=[0,1,0,1],marker_list=['g-','r-'
     plt.axis(axis_interval)
     for i in range(len(measures['precisions'])):
         plt.plot(measures['recalls'][i],measures['precisions'][i],marker_list[i],label='%s pr_auc '%(measures['model_name'][i]))
-        # plt.plot(measures['precisions'][i],measures['recalls'][i],marker_list[i],label='%s pr_auc : %f'%(measures['model_name'][i], measures['pr_auc'][i]))
-        # plt.plot(measures['precisions'][0],measures['recalls'][0],'r-',measures['precisions'][0],measures['recalls'][0],'ro',label='%s pr_auc : %f'%(measures['model_name'][0], measures['pr_auc'][0]))
-        # plt.plot(measures['precisions'][1], measures['recalls'][1], 'g-', label='%s pr_auc : %f' % (measures['model_name'][1], measures['pr_auc'][1]))
-        # plt.plot(measures['precisions'][1], measures['recalls'][1], 'g-', measures['precisions'][1], measures['recalls'][1], 'go',label='%s pr_auc : %f' % (measures['model_name'][1], measures['pr_auc'][1]))
-    # plt.legend(loc='lower center', shadow=True, fontsize='x-large')
     plt.legend(loc='lower center', shadow=True)
-
+    if save_path!=None:
+        if not os.path.isdir(save_path):
+            os.mkdir(save_path)
+        time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        plt.savefig(os.path.join(save_path,'pr_'+time_str+'_.png'))
     plt.show()
 def compare_confusion_matrix(measures):
     # con_mat = {'tp':measures['tp'],'tn':measures['tn'],'fp':measures['fp'],'fn':measures['fn'],'model_name':measures['model_name']}
@@ -215,17 +200,7 @@ def compare_confusion_matrix(measures):
     indice = [name for name in measures['model_name']]
     df = pd.DataFrame(data=con_mat,index=indice)
     print df
-"""
-def compare_model(labels,preds_prob0,preds_prob1,model_name0,model_name1):
-    measures0 = calcu_measures(labels=labels,preds_prob=preds_prob0,model_name=model_name0)
-    measures1 = calcu_measures(labels=labels,preds_prob=preds_prob1,model_name=model_name1)
-    measures = combine_measures(measures0,measures1)
-    df = pd.DataFrame(measures,index=[measures['model_name'][0],measures['model_name'][1]])
-    df = df.drop(['model_name','classification_report','confusion_matrix','fpr','precisions','recalls','thresholds_pr','thresholds_roc','tpr'],axis=1)
-    print df.T
-    # compare_roc_auc(measures)
-    # compare_pr_auc(measures)
-"""
+
 def compare_models(labels_list,pred_scores_list,model_names_list,thres_list):
     measures_list = []
     # 度量计算
@@ -280,13 +255,7 @@ if __name__ == '__main__':
     is_eq_greater_list = [1,1,1]
     measures_all = compare_models(labels_list,pred_scores_list,model_names_list,thres_list,is_eq_greater_list)
     temp = measures_all['recalls'][0]
-    # print temp
-    # print IsListSorted_sorted(temp)
 
-
-    # print IsListSorted_sorted(measures_all['precisions'][0])
-    # print measures_all['recalls'][2]
-    # print measures_all['precisions'][2]
     compare_roc_auc(fid=1,measures=measures_all,marker_list=marker_list)
     compare_pr_auc(fid=2, measures=measures_all, marker_list=marker_list)
     compare_roc_auc(fid=3, measures=measures_all,axis_interval=[0,1,0.9,1],marker_list=marker_list)

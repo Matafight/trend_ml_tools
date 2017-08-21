@@ -98,15 +98,10 @@ def top_level_multi_mapping(i,str2bits_object,filelist):
 class batch_str2bits():
     algorithm = 'MD5'
     def __init__(self,param = None):
-        if None != param:
-            self.algorithm = param['algorithm']
-            self.input_dirs = param['input_dirs']
-            self.output_dir = param['output_dir']
-            self.bits = param['bits']
-            self.labels = param['labels']
-            self.tasks = param['tasks']
-            self.class_types = param['class_types']
+        self.algorithm = param['algorithm']
+        self.bits = param['bits']
 
+    
     def hexstr2bitstr(self,string):
         hex_list = [format(int(c,16),'b') for c in string ]
         re_list = []
@@ -117,12 +112,17 @@ class batch_str2bits():
             assert len(l) == 4
             re_list.append(l)
         temp = ''.join(re_list)
-        temp = [c for c in temp]
+        temp = [int(c) for c in temp]
         return temp
 
     
     def str2hash(self,str):
         return globals()[self.algorithm](self.bits).get_hash(str)
+
+    def str2bit(self,str):
+        hash_cont = self.str2hash(str)
+        bit_cont = self.hexstr2bitstr(hash_cont)
+        return bit_cont
 
     
     def dirlist(self,path,allfile=[],first_vis=False):
@@ -158,6 +158,7 @@ class batch_str2bits():
             cont = fh.read()
             hash_cont = self.str2hash(cont)
             return hash_cont
+
     def multi_handle(self,filelist):
 
         partial_mapping = partial(top_level_multi_mapping,str2bits_object = self,filelist= filelist)
@@ -190,35 +191,6 @@ class batch_str2bits():
         df_bits.to_csv(save_path,index=False)
         return save_path
 
-
-    def saving2files(self,input_dir,task,class_type,label):
-        allfile,bits_list = self.batch_converting(input_dir)
-        bits_arr = np.array(bits_list)
-        num_row,num_column = np.shape(bits_arr)
-        labels = label*np.ones(num_row).reshape(num_row,1)
-        bits_arr = np.concatenate([bits_arr,labels],axis=1)
-        columns = ['bit_'+str(i) for i in range(1,num_column+1)]
-        columns.append('label')
-        df_bits = pd.DataFrame(bits_arr,columns=columns)
-        df_bits.insert(0,'opcode_name',allfile)
-
-        new_dir = self.algorithm+'_'+str(self.bits)
-        n_path = os.path.join(self.output_dir,new_dir)
-        if not os.path.isdir(n_path):
-            os.mkdir(n_path)
-        n_path = os.path.join(n_path,task)
-        if not os.path.isdir(n_path):
-            os.mkdir(n_path)
-        n_path = os.path.join(n_path,class_type)
-        if not os.path.isdir(n_path):
-            os.mkdir(n_path)
-        df_bits.to_csv(os.path.join(n_path,self.algorithm+'_'+str(self.bits)+'_opcode.csv'),index=False)
-    
-
-    def batch_saving2files(self):
-        for i,input_dir in enumerate(self.input_dirs):
-            print(input_dir)
-            self.saving2files(input_dir,self.tasks[i],self.class_types[i],self.labels[i])
 
         
     

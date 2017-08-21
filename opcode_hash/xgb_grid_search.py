@@ -11,7 +11,7 @@ import ConfigParser
 import argparse
 import os
 from sklearn.datasets import load_svmlight_file
-from tools import get_csr_labels,save2xgdata
+from tools.tools import get_csr_labels,save2xgdata
 import log_class
 from sklearn.metrics import recall_score,precision_score,accuracy_score
 import copy
@@ -51,7 +51,7 @@ def conf_parser(conf_path):
 
 
     save_period = int(cf.get('xg_grid_search', 'save_period'))
-    eval = int(cf.get('xg_grid_search', 'eval'))
+    #eval = int(cf.get('xg_grid_search', 'eval'))
     cv = int(cf.get('xg_grid_search','cv'))
 
     t_num_round = int(cf.get('xg_grid_search_tune','num_round'))
@@ -114,7 +114,7 @@ def tune_num_boost_round(params,dtrain,num_boost_round,log,watchlist,eval_metric
     evals_result = {}
     if(feval==None):
         params['eval_metric'] = eval_metric
-    xgb.train(params=params,dtrain=dtrain,num_boost_round=num_boost_round,evals=watchlist,feval=feval,evals_result=evals_result)
+    xgb.train(params=params,dtrain=dtrain,num_boost_round=num_boost_round,evals=watchlist,feval=feval,evals_result=evals_result,early_stopping_rounds = 100)
     evals_result = evals_result['eval'][eval_metric]
     if(ascend==True):
         loc = max(enumerate(evals_result), key=lambda x: x[1])[0]
@@ -188,9 +188,8 @@ def predict_test(model,test_X,test_y,log):
 
 def load_model_test():
     config = dict()
-    config['model_path'] = './models/grid_search/2017_07_27_18_11_28.xgmodel'
-    #config['data_path'] = '../datas/combined-0707/201707/map_md5_48/test_NN_format/NN_features.txt.libsvm'
-    config['data_path']='../datas/Partition/train-test-set-0727/test_vec.dat.libsvm'
+    config['model_path'] = './models/0727_shake_512/2017_08_15_11_50_27.xgmodel'
+    config['data_path']='../datas/Partition/train-test-set-0727/shake_512/test_vec.dat.libsvm'
     X,y = load_svmlight_file(config['data_path'])
     X = X.todense()
     print('test_data shape:')
@@ -229,13 +228,6 @@ def xg_train_wrapper(parser):
     test_x = test_x.todense()
 
     x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, random_state=42)
-    #skf = StratifiedKFold(n_splits = 3,shuffle=True,random_state = 100)
-    #train_ind,val_ind = skf.split(x,y)
-    #x_train  = x[train_ind]
-    #y_train = y[train_ind]
-    #x_val = x[val_ind]
-    #y_val = y[val_ind]
-
     dtrain = xgb.DMatrix(x_train, label=y_train)
     dval = xgb.DMatrix(x_val, y_val)
     dtrain_whole = xgb.DMatrix(x,label = y)
@@ -284,7 +276,8 @@ def xg_train_wrapper(parser):
                                stratified=True,
                                verbose_eval=False,
                                show_stdv=False,
-                               shuffle=True)
+                               shuffle=True,
+                               early_stopping_rounds = 100)
             result_df = result_df[['test-'+params_other['eval_metric']+'-mean']]
             assert result_df.columns[0]=='test-'+params_other['eval_metric']+'-mean','choose the correct column\n'
             result_np = result_df.as_matrix()

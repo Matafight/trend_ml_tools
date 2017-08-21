@@ -1,30 +1,19 @@
-## pipeline简介
-1. opcode2hash.py
-2. hash2NN.py
-3. xgb_hyopt.py
+## opcode_hash 工具简介
+### 整个pipeline主要分为三步：
+1. 将给定的opcode文件转换成二进制的编码，需要预先设置hash算法并设置位数，详见./opcode2NN/opcode2hash_tool.config 配置文件说明,使用方法详见 ./opcode2NN/README.md。
+    
+2. 给定训练集和测试集的划分，将第一步的二进制编码划分为训练集和测试集，该功能的配置文件为 ./opcode2NN/NN_split.config, 使用方法详见./opcode2NN/README.md
 
-代码运行分为两种模式：
-1. pipeline模式
-2. 独立模式
+3. 使用xgboost算法训练第二步的数据。
+    - xgb_grid_search.py  主要训练代码
+    - xgb_grid_search.config  xgboost算法配置文件
+    - 代码会将训练好的模型保存在./models/目录下，并且会将模型在测试集上的混淆矩阵保存在./log/目录下。
 
-## 输入数据的目录结构
-```
-├─malicious
-│  ├─test
-│  │  └─1
-│  └─train
-│      └─1
-├─map_md5_48
-│  ├─test
-│  │  ├─malware
-│  │  └─normal
-│  └─train
-│      |─malware
-|      └─normal
-└─normal
-    ├─test
-    │  └─0
-    └─train
-       └─0
-```
-malicious和normal文件夹存储的是原始opcode文件，map_md4_48文件夹内存储的是由opcode文件生成的hash编码,算法支持md5(128 bits)和sha-3(支持任意长度的散列，不过位数要满足8的倍数,以字节为单位生成散列值)
+### 其他功能
+1. 画出ROC和PR曲线并保存到./curves/目录下
+    - draw.py   画图主文件
+    - draw.config  画图配置文件
+
+
+
+
