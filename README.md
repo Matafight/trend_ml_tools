@@ -20,3 +20,19 @@ This is the tool scripts I used in trendmicro
 5. statistics_rank_features_draw
 
 根据mean,variance,chi2,mutual information等指标算出特征的排序，并画图比较
+
+6. combineOpocdes
+根据给定的train.csv和test.csv文件将指定目录下的opcode文件划分重组，使得满足一下条件的opcode存储在一个目录下:
+- malware and train
+- malware and test
+- normal and train
+- normal and test
+
+7. opcodehash
+将给定的opcode按照相应hash算法映射成一定长度的01编码，以该01编码为features训练模型
+
+8. xgboost_training_ordinary_data
+完整的xgboost的交叉验证调参过程，不过输入的 data是 pandas 的dataframe的格式。
+
+##使用方法
+具体各个工具的使用方法详见各个文件夹内的README文件。
