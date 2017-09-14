@@ -21,7 +21,7 @@ This is the tool scripts I used in trendmicro
 根据mean,variance,chi2,mutual information等指标算出特征的排序，并画图比较
 
 ## 5. combineOpocdes
-根据给定的train.csv和test.csv文件将指定目录下的opcode文件划分重组，使得满足一下条件的opcode存储在一个目录下:
+根据给定的train.csv和test.csv文件将指定目录下的opcode文件划分重组，使得满足以下条件的opcode各自存储在一个目录下:
 - malware and train
 - malware and test
 - normal and train
