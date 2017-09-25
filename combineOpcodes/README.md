@@ -7,3 +7,7 @@ classifier.py的任务是根据train.csv和test.csv将opcode文件划分为一�
 3. normal and train
 4. normal and test
 
+## 使用方法
+```python
+python myclassifier.py
+```
