@@ -4,7 +4,7 @@
 
 数据的输入格式： 
 ```bash
-feature1, feature2,...,featuren,label
+feature_1, feature_2,...,feature_n,label
 ```
 ## 使用方法
 ```python
