@@ -4,10 +4,9 @@ This is the tool scripts I used in trendmicro
 # 各个文件夹介绍
 
 
-
 ## 1. combine_csvs
 
-由于原始特征分散在各个csv文件（每个csv包含一个特征）中，combine_csvs的主要功能是合并特征。
+由于原始特征分散在各个csv文件中，combine_csvs的主要功能是将各个csv文件中的特征合并为一个大的csv文件。
 
 
 ## 2. models_rank_features_draw
@@ -32,7 +31,7 @@ This is the tool scripts I used in trendmicro
 - normal and test
 
 ## 6. opcodehash
-将给定的opcode按照相应hash算法映射成一定长度的01编码，以该01编码为features训练模型
+将给定的opcode按照相应hash算法映射成一定长度的01编码，以该01编码为features并使用xgboost算法训练模型
 
 ## 7. xgboost_training_ordinary_data
 完整的xgboost的交叉验证调参过程，不过输入的 data是 pandas 的dataframe的格式。
