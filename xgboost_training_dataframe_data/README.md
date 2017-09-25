@@ -3,7 +3,7 @@
 
 数据的输入格式： 
 ```bash
-feature1, feature2,...,featuren,label
+feature_1, feature_2,...,feature_n,label
 ```
 
 具体的参数设置见文件： xgb_grid_search.config
