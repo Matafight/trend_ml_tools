@@ -5,11 +5,11 @@ This is the tool scripts I used in trendmicro
 
 ## 1. average_rank
 
-根据models_rank_features_draw和statistics_rank_features_draw两个文件夹中的代码生成的各个指标的排序，算出综合排序
+根据models_rank_features_draw和statistics_rank_features_draw两个文件夹中的代码生成的各个指标的排序，算出特征的综合排序
 
 ## 2. combine_csvs
 
-由于原始特征分散在各个文件中，combine_csvs的主要功能是合并特征
+由于原始特征分散在各个csv文件中，combine_csvs的主要功能是将各个csv文件中的特征合并为一个大的csv文件。
 
 
 ## 3. models_rank_features_draw
@@ -28,7 +28,7 @@ This is the tool scripts I used in trendmicro
 - normal and test
 
 ## 6. opcodehash
-将给定的opcode按照相应hash算法映射成一定长度的01编码，以该01编码为features训练模型
+将给定的opcode按照相应hash算法映射成一定长度的01编码，以该01编码为features并使用xgboost算法训练模型
 
 ## 7. xgboost_training_ordinary_data
 完整的xgboost的交叉验证调参过程，不过输入的 data是 pandas 的dataframe的格式。
