@@ -1,7 +1,7 @@
 ## 主要功能
 使用xgboost训练模型，对于超参数，使用自动化脚本执行交叉验证求解。
 
-数据的输入格式： 
+数据的输入格式： dataframe 格式
 ```bash
 feature_1, feature_2,...,feature_n,label
 ```
